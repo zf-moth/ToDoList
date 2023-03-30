@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Net;
 using ToDoList;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -16,6 +20,20 @@ app.MapGet("/{id:int}", (int id) => {
     } else
     {
         return Results.NotFound("ToDo Item not found.");
+    }
+});
+
+app.MapPost("/new", async (HttpRequest request) =>
+{
+    var item = await request.ReadFromJsonAsync<TodoItem?>();
+    if (item != null)
+    {
+        repo.AddNew(new TodoItem(repo.Items.Count, item.Title, DateTime.Now));
+        return Results.Ok(item.ToString());
+    }
+    else
+    {
+        return Results.NoContent();
     }
 });
 
